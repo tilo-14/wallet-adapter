@@ -119,11 +119,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      # Build only Light Token packages and their dependencies (not all 46 packages)
-      - name: Build Light Token packages
-        run: |
-          pnpm turbo run build --filter=@solana/wallet-adapter-react-light...
-          pnpm turbo run build --filter=@solana/wallet-adapter-light-token-starter...
+      # Build all packages (turbo will cache unchanged ones)
+      - name: Build packages
+        run: pnpm run build
 
       - name: Start test validator
         run: |
