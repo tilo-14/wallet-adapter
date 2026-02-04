@@ -100,23 +100,14 @@ export function useLightToken(): LightTokenContextState {
             const options = mint ? { mint } : undefined;
             const response = await rpc.getCompressedTokenAccountsByOwner(publicKey, options);
 
-            if (!response || !response.value) {
+            if (!response) {
                 return [];
             }
 
-            // The response.value is the array of token accounts
-            const accounts = Array.isArray(response.value) ? response.value : [];
+            // WithCursor<ParsedTokenAccount[]> - response is array-like with cursor
+            const accounts = Array.isArray(response) ? response : [];
 
-            return accounts.map((item: {
-                parsed: {
-                    mint: string;
-                    owner: string;
-                    amount: string;
-                    delegate: string | null;
-                    delegatedAmount?: string;
-                    state?: number;
-                };
-            }) => ({
+            return accounts.map((item) => ({
                 mint: new PublicKey(item.parsed.mint),
                 owner: new PublicKey(item.parsed.owner),
                 amount: bn(item.parsed.amount),
