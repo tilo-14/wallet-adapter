@@ -139,3 +139,9 @@ jobs:
       - name: TypeScript type check for react-light
         working-directory: packages/core/react-light
         run: pnpm exec tsc --noEmit
+
+      - name: Run E2E tests for react-light
+        working-directory: packages/core/react-light
+        run: pnpm test:e2e
+        env:
+          NODE_OPTIONS: "--experimental-vm-modules"
