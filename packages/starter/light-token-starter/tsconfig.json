@@ -4,6 +4,7 @@
     "compilerOptions": {
         "outDir": "lib",
         "jsx": "react-jsx",
-        "declaration": false
+        "declaration": false,
+        "skipLibCheck": true
     }
 }
