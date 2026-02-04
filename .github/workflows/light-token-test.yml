@@ -70,7 +70,7 @@ jobs:
           echo "/home/runner/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
       - name: Install Light CLI
-        run: npm install -g @lightprotocol/zk-compression-cli@alpha
+        run: npm install -g @lightprotocol/zk-compression-cli@beta
 
       - name: Install Rust (for Photon)
         uses: actions-rust-lang/setup-rust-toolchain@v1

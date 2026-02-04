@@ -36,8 +36,8 @@
         "react": "*"
     },
     "dependencies": {
-        "@lightprotocol/compressed-token": "^0.17.0",
-        "@lightprotocol/stateless.js": "^0.17.0",
+        "@lightprotocol/compressed-token": "beta",
+        "@lightprotocol/stateless.js": "beta",
         "@solana/wallet-adapter-base": "workspace:^",
         "@solana/wallet-adapter-react": "workspace:^"
     },
