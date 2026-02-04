@@ -71,11 +71,14 @@ export function useLightToken(): LightTokenContextState {
 
         const response = await rpc.getCompressedTokenBalancesByOwnerV2(publicKey);
 
-        if (!response || !response.items) {
+        if (!response || !response.value) {
             return [];
         }
 
-        return response.items.map((item: { mint: PublicKey; balance: string | number }) => ({
+        // The response.value is the array of token balances
+        const balances = Array.isArray(response.value) ? response.value : [];
+
+        return balances.map((item: { mint: string; balance: string }) => ({
             mint: new PublicKey(item.mint),
             balance: bn(item.balance),
             decimals: 9, // Default decimals, could be fetched from mint info
@@ -97,26 +100,29 @@ export function useLightToken(): LightTokenContextState {
             const options = mint ? { mint } : undefined;
             const response = await rpc.getCompressedTokenAccountsByOwner(publicKey, options);
 
-            if (!response || !response.items) {
+            if (!response || !response.value) {
                 return [];
             }
 
-            return response.items.map((item: {
+            // The response.value is the array of token accounts
+            const accounts = Array.isArray(response.value) ? response.value : [];
+
+            return accounts.map((item: {
                 parsed: {
-                    mint: PublicKey;
-                    owner: PublicKey;
-                    amount: string | number;
-                    delegate: PublicKey | null;
-                    delegatedAmount?: string | number;
-                    state?: string;
+                    mint: string;
+                    owner: string;
+                    amount: string;
+                    delegate: string | null;
+                    delegatedAmount?: string;
+                    state?: number;
                 };
             }) => ({
                 mint: new PublicKey(item.parsed.mint),
                 owner: new PublicKey(item.parsed.owner),
                 amount: bn(item.parsed.amount),
                 delegate: item.parsed.delegate ? new PublicKey(item.parsed.delegate) : null,
-                delegatedAmount: bn(item.parsed.delegatedAmount ?? 0),
-                isFrozen: item.parsed.state === 'frozen',
+                delegatedAmount: bn(item.parsed.delegatedAmount ?? '0'),
+                isFrozen: item.parsed.state === 2, // 2 = frozen state
             }));
         },
         [rpc, publicKey]
@@ -137,7 +143,7 @@ export function useLightToken(): LightTokenContextState {
             const decimals = options.decimals ?? 9;
             const mintKeypair = Keypair.generate();
 
-            // Create the Light mint using the Interface API
+            // Create the Light mint using the SDK
             const { transactionSignature } = await lightCreateMint(
                 rpc,
                 {
@@ -146,8 +152,7 @@ export function useLightToken(): LightTokenContextState {
                 } as unknown as Keypair, // The SDK accepts a signer interface
                 options.authority,
                 decimals,
-                mintKeypair,
-                options.freezeAuthority ?? null
+                mintKeypair
             );
 
             return {
@@ -225,6 +230,10 @@ export function useLightToken(): LightTokenContextState {
                 throw new Error('Wallet not connected. Please connect your wallet first.');
             }
 
+            const amount = typeof options.amount === 'bigint'
+                ? bn(options.amount.toString())
+                : bn(options.amount);
+
             const signature = await lightMintTo(
                 rpc,
                 {
@@ -237,7 +246,7 @@ export function useLightToken(): LightTokenContextState {
                     publicKey,
                     signTransaction: signTransaction!,
                 } as unknown as Keypair, // authority
-                BigInt(options.amount)
+                amount
             );
 
             return { signature };
@@ -264,6 +273,10 @@ export function useLightToken(): LightTokenContextState {
                 throw new Error('Wallet not connected. Please connect your wallet first.');
             }
 
+            const amount = typeof options.amount === 'bigint'
+                ? bn(options.amount.toString())
+                : bn(options.amount);
+
             const signature = await lightTransfer(
                 rpc,
                 {
@@ -271,7 +284,7 @@ export function useLightToken(): LightTokenContextState {
                     signTransaction: signTransaction!,
                 } as unknown as Keypair,
                 options.mint,
-                BigInt(options.amount),
+                amount,
                 {
                     publicKey,
                     signTransaction: signTransaction!,

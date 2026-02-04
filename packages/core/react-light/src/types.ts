@@ -1,6 +1,6 @@
 import type { PublicKey } from '@solana/web3.js';
 import type { Rpc } from '@lightprotocol/stateless.js';
-import type { BN } from '@lightprotocol/stateless.js';
+import type BN from 'bn.js';
 
 /**
  * Represents a Light Token balance for a specific mint
